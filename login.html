@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #beafbc, #a0b1a3);
+            color: #f3e9e9;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin-top: 5%;
+            padding: 2rem;
+            background: rgba(71, 70, 70, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(15, 13, 13, 0.2);
+        }
+        h2 {
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            color: #d5bbcf;
+        }
+        .form-label {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #eae5e5;
+        }
+        .form-control {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 5px;
+            border: 1px solid #c8bdbd;
+        }
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #a8b9ca;
+        }
+        .btn-primary {
+            margin-top: 1rem;
+            font-weight: bold;
+            padding: 0.75rem;
+            background-color: #79acbd;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #8aabb5;
+        }
+        .loader {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f0e9e9;
+            border-top: 2px solid #dfa7d3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .btn-link {
+            color: #f5e9e9;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        .btn-link:hover {
+            color: #d29db9;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="container text-center">
+    <div class="mb-4">
+        <i class="bi bi-person-circle" style="font-size: 4rem; color: #aa82a6;"></i>
+        <h2>Login</h2>
+    </div>
+    <form @submit.prevent="login">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" id="username" v-model="username" placeholder="Enter your username" class="form-control" required>
+        
+        <label for="password" class="form-label">Password</label>
+        <div class="password-container">
+            <input :type="showPassword ? 'text' : 'password'" id="password" v-model="password" placeholder="Enter your password" class="form-control" required>
+            <span class="toggle-password" @click="togglePasswordVisibility">
+                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+            </span>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
+            <span v-if="!isLoading">Login</span>
+            <span v-else>Logging in <span class="loader"></span></span>
+        </button>
+        <p v-if="message" :class="{'text-success': success, 'text-danger': !success}" class="mt-3">{{ message }}</p>
+    </form>
+    <a href="register.html" class="btn btn-link w-100 mt-3">Don't have an account? Register</a>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            username: '',
+            password: '',
+            message: '',
+            success: false,
+            showPassword: false,
+            isLoading: false
+        };
+    },
+    methods: {
+        togglePasswordVisibility() {
+            this.showPassword = !this.showPassword;
+        },
+        async login() {
+    this.isLoading = true;
+    this.message = '';
+    try {
+        const response = await axios.post('login.php', {
+            user: this.username,
+            pass: this.password
+        });
+
+        this.message = response.data.message;
+        this.success = response.data.success;
+
+        // If login is successful, redirect to the provided URL
+        if (response.data.success) {
+            window.location.href = response.data.redirect; // Redirect to the provided URL
+        }
+    } catch (error) {
+        this.message = 'An error occurred. Please try again.';
+        this.success = false;
+    } finally {
+        this.isLoading = false;
+    }
+}
+
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
